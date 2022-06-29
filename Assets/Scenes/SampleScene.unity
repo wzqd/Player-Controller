@@ -459,11 +459,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3552869811390254640, guid: fd9ce8d7bffcdbf4a9a6a3dffd3ae913, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 0
+      value: -1.25
       objectReference: {fileID: 0}
     - target: {fileID: 3552869811390254640, guid: fd9ce8d7bffcdbf4a9a6a3dffd3ae913, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0
+      value: -1.07
       objectReference: {fileID: 0}
     - target: {fileID: 3552869811390254640, guid: fd9ce8d7bffcdbf4a9a6a3dffd3ae913, type: 3}
       propertyPath: m_LocalPosition.z
@@ -500,6 +500,14 @@ PrefabInstance:
     - target: {fileID: 3552869811390254642, guid: fd9ce8d7bffcdbf4a9a6a3dffd3ae913, type: 3}
       propertyPath: m_Name
       value: Player
+      objectReference: {fileID: 0}
+    - target: {fileID: 3552869811390254671, guid: fd9ce8d7bffcdbf4a9a6a3dffd3ae913, type: 3}
+      propertyPath: isLocked
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3552869811390254671, guid: fd9ce8d7bffcdbf4a9a6a3dffd3ae913, type: 3}
+      propertyPath: readyChangeDirection
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: fd9ce8d7bffcdbf4a9a6a3dffd3ae913, type: 3}

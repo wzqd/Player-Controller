@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Serialization;
 
+
 [RequireComponent(typeof(Rigidbody2D))] //如果没有刚体 强行加刚体
 public class Player : MonoBehaviour
 {
@@ -27,6 +28,9 @@ public class Player : MonoBehaviour
     [SerializeField] private float inputFaceDirection; //面朝方向 正右负左 输入才会有
     [SerializeField] private int faceDirectionRaw; //面朝方向 正右负左 用于记录方向 无输入时默认向右
     [SerializeField] private bool isMoving; //是否正在移动
+    [SerializeField] private bool isMovingLeft;
+    [SerializeField] private bool isMovingRight;
+    [SerializeField] private bool readyChangeDirection = true; //是否只按下一边的按键
     private Rigidbody2D rb;
     
     [Header("跳跃检测参数")]
@@ -107,11 +111,13 @@ public class Player : MonoBehaviour
     {
         if (!isDashing) //冲刺时不能左右移动或转向 （冲刺和短按操作不冲突，和长按操作冲突）
         {
-            if (isMoving && !isAttacking) //只有移动时 并且不在攻击 才能转向 （攻击时转向会一下a很多东西）
+            if (isMoving && !isAttacking && readyChangeDirection) //只有移动时 并且不在攻击 才能转向 （攻击时转向会一下a很多东西）
             {
                 TurnAround(); //转向
+                readyChangeDirection = false;
             }
-            LeftRightMove(key); //左右移动
+            LeftMove(key); //左右移动
+            RightMove(key);
             HoldJumpProcess(key);//长按跳跃     
         }
     }
@@ -134,7 +140,8 @@ public class Player : MonoBehaviour
     private void PlayerMoveRelease(KeyCode key)
     {
         ReleaseJump(key); //松开长按跳跃
-        ReleaseLeftRightMove(key); //松开长按移动
+        ReleaseLeftMove(key); //松开长按移动
+        ReleaseRightMove(key);
     }
 
     
@@ -149,28 +156,44 @@ public class Player : MonoBehaviour
         transform.eulerAngles = inputFaceDirectionRaw >= 0 ? new Vector3(0, 0, 0) : new Vector3(0, 180, 0);
         faceDirectionRaw = (int)inputFaceDirectionRaw;
     }
+
     /// <summary>
     /// 左右移动 长按操作
     /// </summary>
-    private void LeftRightMove(KeyCode key)
+    private void LeftMove(KeyCode key)
     {
         //向左走
         if (key == InputMgr.Instance.KeySet["left"]) //按住左走键
         {
             isMoving = true;
+            isMovingLeft = true;
+            isMovingRight = false;
             rb.velocity = new Vector2(inputFaceDirection * speed, rb.velocity.y);
-            if (isGrounded) //只有在地上才有移动动画
-              ChangeAnimationState(move,isLocked);
+            if (isGrounded) //只有在地上才有移动动画{
+            {
+                ChangeAnimationState(move, isLocked);
+            }
         }
+    }
+
+    private void RightMove(KeyCode key)
+    {
         //向右走
         if (key == InputMgr.Instance.KeySet["right"]) //按住右走键
         {
             isMoving = true;
+            isMovingRight = true;
+            isMovingLeft = false;
             rb.velocity = new Vector2(inputFaceDirection * speed, rb.velocity.y);
             if (isGrounded) //只有在地上才有移动动画
-               ChangeAnimationState(move,isLocked);
+            {
+                ChangeAnimationState(move, isLocked);
+            }
+
         }
     }
+        
+        
 
     
     
@@ -244,7 +267,7 @@ public class Player : MonoBehaviour
         rb.constraints = RigidbodyConstraints2D.FreezeRotation; //只锁z轴 y轴解冻
         rb.velocity = Vector2.zero; //冲刺结束后速度归零 防止速度延续
         if (isGrounded)
-            ChangeAnimationState(idle,isLocked);
+            ChangeAnimationState(idle, isLocked);
         else ChangeAnimationState(fall,isLocked);
         //冲刺间冷却计时
         TimeMgr.Instance.StartFuncTimer(dashCoolDown, ()=>{dashReady = false;}, () => { dashReady = true; });
@@ -311,15 +334,32 @@ public class Player : MonoBehaviour
     /// 松开长按移动 松键操作
     /// </summary>
     /// <param name="key"></param>
-    private void ReleaseLeftRightMove(KeyCode key)
+    private void ReleaseLeftMove(KeyCode key)
     {
-        if (key == InputMgr.Instance.KeySet["left"] || key == InputMgr.Instance.KeySet["right"]) //松开移动
+        if (key == InputMgr.Instance.KeySet["left"] ) //松开移动
         {
             isMoving = false; //退出移动状态
+            readyChangeDirection = true; //松开一边的移动才可以翻转
             if (!isDashing) //冲刺时松开不会停止移动
             {
                 rb.velocity = new Vector2(0, rb.velocity.y); //松开移动直接停止
-                if (isGrounded)
+                if (isGrounded && isMovingLeft)
+                {
+                    ChangeAnimationState(idle, isLocked);
+                }
+            }
+        }
+    }
+    private void ReleaseRightMove(KeyCode key)
+    {
+        if (key == InputMgr.Instance.KeySet["right"]) //松开移动
+        {
+            isMoving = false; //退出移动状态
+            readyChangeDirection = true; //松开一边的移动才可以翻转
+            if (!isDashing) //冲刺时松开不会停止移动
+            {
+                rb.velocity = new Vector2(0, rb.velocity.y); //松开移动直接停止
+                if (isGrounded && isMovingRight)
                 {
                     ChangeAnimationState(idle, isLocked);
                 }
